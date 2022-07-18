@@ -153,7 +153,11 @@ def parameter_store():
     os.remove('models_cv.pkl')
 
 def model_selection(X, y, random_state= 17):
-    download_file_from_s3('models_cv.pkl', 'machine_learning/models/models_cv.pkl')
+    try: 
+        download_file_from_s3('models_cv.pkl', 'machine_learning/models/models_cv.pkl')
+    except:
+        parameter_store()
+    
     with open('models_cv.pkl', 'rb') as f:
         models_cv = pickle.loads(f)
     os.remove('models_cv.pkl')

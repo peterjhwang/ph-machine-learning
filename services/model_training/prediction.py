@@ -1,17 +1,13 @@
 from model_selection import model_selection
 from statsmodels.tsa.api import SimpleExpSmoothing
 import pickle
+from utils.aws.s3 import upload_str_to_s3
+from datetime import datetime as dt
 
 ALPHA = 0.7
 
-def prediction(df):
-    nan_length = len(df[df['national_gdp'].isnull()])
-    for col in df.columns:
-        length = len(df[pd.isnull(df[col])])
-        if length > 0:
-            print(col, length)
-            if col == 'national_gdp':
-                nan_length = length * -1
+def prediction(df, selected_models):
+    nan_length = len(df[df['national_gdp'].isnull()]) * -1
 
     result = df[['national_gdp']].iloc[int(len(df) * ALPHA):].copy()
     result.columns = ['Actual']
@@ -35,9 +31,6 @@ def prediction(df):
         models_cv = pickle.loads(f)
     os.remove('models_cv.pkl')
 
-    selected_models = model_selection()
-
-    start_time = dt.now()
     size = int(len(df) * ALPHA)
     for name, model in models_cv:
         if name not in selected_models:
@@ -57,9 +50,12 @@ def prediction(df):
                     y_pred.append(model.predict(df.iloc[[i+1]].drop(['national_gdp'], axis=1).values)[0])
             if name == 'XGBRegressor':
                 xgb_model = model
-        print(name, dt.now() - start_time)
         result[name] = y_pred
 
     # combine models together
     result['Final'] = result[selected_models].mean(axis=1)
+
+    month_str = dt.now().strftime('%Y%m')
+    upload_str_to_s3(result.to_csv(), f'machine_learning/results/national_gdp_{month_str}.pkl')
+    application.logger.info('prediction file has been loaded into S3')
     return result

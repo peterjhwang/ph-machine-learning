@@ -2,12 +2,18 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 from scipy.signal import find_peaks
+from data_preparation import data_preparation
 from utils.aws.s3 import download_from_s3_return_df, upload_str_to_s3
 
 def feature_engineering():
-    quarterly = download_from_s3_return_df('quarterly.csv', 'machine_learning/preprocessing/')
-    quarterly['Period'] = pd.to_datetime(quarterly['Period'])
-    quarterly.set_index('Period', inplace=True)
+    ## if there is no file, run data_preparation
+    try:
+        quarterly = download_from_s3_return_df('quarterly.csv', 'machine_learning/preprocessing/')
+        quarterly['Period'] = pd.to_datetime(quarterly['Period'])
+        quarterly.set_index('Period', inplace=True)
+    except:
+        quarterly = data_preparation()
+    
     original_columns = quarterly.columns
 
     for i, col in enumerate(original_columns):

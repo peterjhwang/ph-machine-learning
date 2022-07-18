@@ -111,3 +111,12 @@ def data_preparation():
     ## log
     application.logger.info('quarterly.csv file has been loaded into S3')
     return prepared_df
+
+
+def load_national_gdp():
+    gdp_df = download_from_s3_return_df('gdp.csv', 'nz-stats/webscrapping/')
+    gdp_df = gdp_df[gdp_df['Level']=='Total GDP'].copy()
+    gdp_df['Period'] = pd.to_datetime(gdp_df['Quarter']) + pd.offsets.QuarterEnd(0)
+    gdp_df.set_index('Period', inplace=True)
+    gdp_df.rename(columns={'Amount': 'national_gdp'}, inplace=True)
+    return gdp_df[['national_gdp']]
