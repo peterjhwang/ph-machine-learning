@@ -5,7 +5,6 @@ from services.model_training.model_selection import model_selection
 from services.model_training.prediction import prediction
 
 ### orchestrate the entire service
-
 try:
     # 1. prepare data
     quarterly = data_preparation() 
@@ -21,6 +20,6 @@ try:
 
     # 3. prediction
     result_df = prediction(df, selected_models)
-    
+
 except Exception as e:
     application.logger.error(str(e))
