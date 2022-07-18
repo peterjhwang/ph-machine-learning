@@ -1,4 +1,5 @@
 # ph-machine-learning
+Temporary flask app before move to Sagemaker. 
 
 ## Services 
 1. Data preparation
